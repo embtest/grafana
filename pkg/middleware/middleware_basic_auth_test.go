@@ -5,8 +5,9 @@ import (
 	"testing"
 
 	"github.com/grafana/grafana/pkg/bus"
-	authLogin "github.com/grafana/grafana/pkg/login"
+	"github.com/grafana/grafana/pkg/login"
 	"github.com/grafana/grafana/pkg/models"
+	"github.com/grafana/grafana/pkg/services/contexthandler"
 	"github.com/grafana/grafana/pkg/setting"
 	"github.com/grafana/grafana/pkg/util"
 	"github.com/stretchr/testify/assert"
@@ -82,7 +83,7 @@ func TestMiddlewareBasicAuth(t *testing.T) {
 		const password = "MyPass"
 		const salt = "Salt"
 
-		authLogin.Init()
+		login.Init()
 
 		bus.AddHandler("user-query", func(query *models.GetUserByLoginQuery) error {
 			encoded, err := util.EncodePassword(password, salt)
@@ -118,7 +119,7 @@ func TestMiddlewareBasicAuth(t *testing.T) {
 		require.Error(t, err)
 
 		assert.Equal(t, 401, sc.resp.Code)
-		assert.Equal(t, errStringInvalidUsernamePassword, sc.respJson["message"])
+		assert.Equal(t, contexthandler.InvalidUsernamePassword, sc.respJson["message"])
 	})
 
 	middlewareScenario(t, "Should return error if user & password do not match", func(sc *scenarioContext) {
@@ -134,6 +135,6 @@ func TestMiddlewareBasicAuth(t *testing.T) {
 		require.Error(t, err)
 
 		assert.Equal(t, 401, sc.resp.Code)
-		assert.Equal(t, errStringInvalidUsernamePassword, sc.respJson["message"])
+		assert.Equal(t, contexthandler.InvalidUsernamePassword, sc.respJson["message"])
 	})
 }
